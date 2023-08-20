@@ -4,19 +4,26 @@ import * as THREE from "three"
 import {data} from "./data"
 
 
-const PATHS = data.economics[0].paths
 
-function Tube() {
+let curves = []
+
+for(let i = 0; i < 100; i++){
   let points = []
-    for(let i = 0; i < 10; i++){
+  for(let j = 0; j < 100; j++){
       points.push(
-        new THREE.Vector3(
-          (i - 5) * 0.5, 
-          Math.sin(i * 2) * 10 + 5,
-        0)
+        new THREE.Vector3().setFromSphericalCoords(
+          0.2,
+          (i / 100) * Math.PI,
+          (j / 100) * Math.PI * 2,
+        )
       )
     }
-    let curve = new THREE.CatmullRomCurve3(points)
+    let tempcurve = new THREE.CatmullRomCurve3(points)
+    curves.push(tempcurve)
+}
+
+
+function Tube({curve}) {
   return (
     <>
     <mesh>
@@ -27,17 +34,23 @@ function Tube() {
   )
 }
 
+function Tubes(){
+  return (
+    <>
+    {curves.map((curve, index) => (
+      <Tube curve={curve} key={index}/>
+    ))}
+    </>
+  )
+}
+
 function App() {
 
   return (
     <Canvas>
       <ambientLight/>
       <pointLight position={[10, 10, 10]}/>
-      <mesh>
-        <boxGeometry args={[1,1,1]}></boxGeometry>
-        <meshStandardMaterial color="tomato"/>
-      </mesh>
-      <Tube/>
+      <Tubes/>
       <OrbitControls/>
     </Canvas>
   )
