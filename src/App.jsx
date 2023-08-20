@@ -47,7 +47,7 @@ function Tube({curve}) {
   })
 
   const BrainMatirial = shaderMaterial(
-    { time: 0, color: new THREE.Color(0.2, 0.4, 0.1) },
+    { time: 0, color: new THREE.Color(0.1, 0.3, 0.6) },
     // vertex shader
     /*glsl*/`
     varying vec2 vUv;
@@ -56,7 +56,7 @@ function Tube({curve}) {
     
     void main() {
       vUv = uv;
-      vProgress = smoothstep(-1.,1.,sin(vUv.x * 8.0 * time));
+      vProgress = smoothstep(-1.,1.,sin(vUv.x * 8.0 + time*4.0));
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
     `,
@@ -67,9 +67,8 @@ function Tube({curve}) {
       varying vec2 vUv;
       varying float vProgress; 
       void main() {
-        vec3 color1 = vec3(1.0, 0.0, 0.0);
-        vec3 color2 = vec3(1.0, 1.0, 0.0);
-        vec3 finalColor = mix(color1, color2, vProgress);
+        vec3 finalColor = mix(color, color*0.25, vProgress);
+        gl_FragColor = vec4(vec3(vProgress), 1.0);
         gl_FragColor = vec4(finalColor, 1.0);
       }
     `
@@ -80,17 +79,17 @@ function Tube({curve}) {
   return (
     <>
     <mesh>
-      <tubeGeometry args={[curve, 64, 0.01, 3, false]}/>
-      <brainMatirial ref={brainMat} side={THREE.DoubleSide}/>
+      <tubeGeometry args={[curve, 64, 0.001, 2, false]}/>
+      <brainMatirial ref={brainMat} side={THREE.DoubleSide} transparent={true} depthTest={false} depthWrite={false} blending={THREE.AdditiveBlending} wireframe={true} />
     </mesh>
     </>
   )
 }
 
-function Tubes(){
+function Tubes({allthecurves}){
   return (
     <>
-    {brainCurves.map((curve, index) => (
+    {allthecurves.map((curve, index) => (
       <Tube curve={curve} key={index}/>
     ))}
     </>
@@ -100,11 +99,11 @@ function Tubes(){
 function App() {
 
   return (
-    <Canvas camera={{position:[0,0, 1.3]}}>
+    <Canvas camera={{position:[0,0, 0.3], near: 0.001, far: 5}}>
       <color attach="background" args={["black"]}/>
       <ambientLight/>
       <pointLight position={[10, 10, 10]}/>
-      <Tubes/>
+      <Tubes allthecurves={brainCurves}/>
       <OrbitControls/>
     </Canvas>
   )
